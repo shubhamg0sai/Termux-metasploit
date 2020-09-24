@@ -1,7 +1,7 @@
 # Termux-metasploit
 
 ### screenshot
-  ![ ](https://github.com/ShuBhamg0sain/Termux-metasploit/blob/master/68747470733a2f2f692e696d6775722e636f6d2f794c46516876502e706e67.png)
+  ![ ](https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/68747470733a2f2f692e696d6775722e636f6d2f794c46516876502e706e67.png)
 
 
 ## How to install:
