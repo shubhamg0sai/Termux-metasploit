@@ -67,7 +67,7 @@ termux-elf-cleaner /data/data/com.termux/files/usr/lib/ruby/gems/2.4.0/gems/pg-0
 echo
 center "*** Database configuration..."
 cd $HOME/metasploit-framework/config
-curl -sLO https://raw.githubusercontent.com/gushmazuko/metasploit_in_termux/master/database.yml
+curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/database.yml
 
 mkdir -p $PREFIX/var/lib/postgresql
 initdb $PREFIX/var/lib/postgresql
@@ -77,7 +77,7 @@ createuser msf
 createdb msf_database
 
 cd $HOME
-curl -sLO https://raw.githubusercontent.com/gushmazuko/metasploit_in_termux/master/postgresql_ctl.sh
+curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/postgresql_ctl.sh
 chmod +x postgresql_ctl.sh
 
 echo
@@ -168,7 +168,7 @@ termux-elf-cleaner /data/data/com.termux/files/usr/lib/ruby/gems/2.4.0/gems/pg-0
 echo
 center "*** Database configuration..."
 cd $HOME/metasploit-framework/config
-curl -sLO https://raw.githubusercontent.com/gushmazuko/metasploit_in_termux/master/database.yml
+curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/database.yml
 
 mkdir -p $PREFIX/var/lib/postgresql
 initdb $PREFIX/var/lib/postgresql
@@ -178,7 +178,7 @@ createuser msf
 createdb msf_database
 
 cd $HOME
-curl -sLO https://raw.githubusercontent.com/gushmazuko/metasploit_in_termux/master/postgresql_ctl.sh
+curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/postgresql_ctl.sh
 chmod +x postgresql_ctl.sh
 
 echo
