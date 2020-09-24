@@ -1,8 +1,8 @@
 production:
     adapter: postgresql
     database: msf_database
-    username: ShuBham
-    password: ShuBham
+    username: msf
+    password: msf
     host: 127.0.0.1
     port: 5432
     pool: 75
