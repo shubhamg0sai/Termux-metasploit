@@ -1,187 +1,156 @@
-#!/data/data/com.termux/files/usr/bin/bash
-# Forked from: https://github.com/Hax4us/Metasploit_termux
-clear
-echo "   
-    +-+-+-+-+-+-+-+-+-+-+ +-+-+ +-+-+-+-+-+-+
-      |T|e|r|m|u|x|----|M|e|t|a|s|p|l|o|i|t| 
-    +-+-+-+-+-+-+-+-+-+-+ +-+-+ +-+-+-+-+-+-+
-            +-+-+ +-+-+-+-+-+-+-+-+-+-+
-            ___|b|y| |S|H|U|B|H|A|M|___
-            +-+-+ +-+-+-+-+-+-+-+-+-+-+
-"
-
-center() {
-  termwidth=$(stty size | cut -d" " -f2)
-  padding="$(printf '%0.1s' ={1..500})"
-  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
-}
-
-# Loading spinner
-center " Loading..."
-source <(echo "c3Bpbm5lcj0oICd8JyAnLycgJy0nICdcJyApOwoKY291bnQoKXsKICBzcGluICYKICBwaWQ9JCEKICBmb3IgaSBpbiBgc2VxIDEgMTBgCiAgZG8KICAgIHNsZWVwIDE7CiAgZG9uZQoKICBraWxsICRwaWQgIAp9CgpzcGluKCl7CiAgd2hpbGUgWyAxIF0KICBkbyAKICAgIGZvciBpIGluICR7c3Bpbm5lcltAXX07IAogICAgZG8gCiAgICAgIGVjaG8gLW5lICJcciRpIjsKICAgICAgc2xlZXAgMC4yOwogICAgZG9uZTsKICBkb25lCn0KCmNvdW50" | base64 -d)
-
-echo
-center "*** Dependencies installation..."
-pkg upgrade -y -o Dpkg::Options::="--force-confnew"
-pkg install -y autoconf bison clang coreutils curl findutils apr apr-util postgresql openssl readline libffi libgmp libpcap libsqlite libgrpc libtool libxml2 libxslt ncurses make ruby ncurses-utils ncurses git wget unzip zip tar termux-tools termux-elf-cleaner pkg-config git -o Dpkg::Options::="--force-confnew"
-
-echo
-center "*** Fix ruby BigDecimal"
-source <(curl -sL https://github.com/termux/termux-packages/files/2912002/fix-ruby-bigdecimal.sh.txt)
-
-echo
-center "*** Erasing old metasploit folder..."
-rm -rf $HOME/metasploit-framework
-
-echo
-center "*** Downloading..."
-cd $HOME
-git clone https://github.com/rapid7/metasploit-framework.git
-
-echo
-center "*** Installation..."
-cd $HOME/metasploit-framework
-sed '/rbnacl/d' -i Gemfile.lock
-sed '/rbnacl/d' -i metasploit-framework.gemspec
-gem install bundler
-sed 's|nokogiri (1.*)|nokogiri (1.8.0)|g' -i Gemfile.lock
-
-gem install nokogiri -v 1.8.0 -- --use-system-libraries
-
-gem install actionpack
-bundle update activesupport
-bundle update --bundler
-bundle install -j5
-$PREFIX/bin/find -type f -executable -exec termux-fix-shebang \{\} \;
-rm ./modules/auxiliary/gather/http_pdf_authors.rb
-if [ -e $PREFIX/bin/msfconsole ];then
-	rm $PREFIX/bin/msfconsole
-fi
-if [ -e $PREFIX/bin/msfvenom ];then
-	rm $PREFIX/bin/msfvenom
-fi
-ln -s $HOME/metasploit-framework/msfconsole /data/data/com.termux/files/usr/bin/
-ln -s $HOME/metasploit-framework/msfvenom /data/data/com.termux/files/usr/bin/
-termux-elf-cleaner /data/data/com.termux/files/usr/lib/ruby/gems/2.4.0/gems/pg-0.20.0/lib/pg_ext.so
-
-echo
-center "*** Database configuration..."
-cd $HOME/metasploit-framework/config
-curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/database.yml
-
-mkdir -p $PREFIX/var/lib/postgresql
-initdb $PREFIX/var/lib/postgresql
-
-pg_ctl -D $PREFIX/var/lib/postgresql start
-createuser msf
-createdb msf_database
-
-cd $HOME
-curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/postgresql_ctl.sh
-chmod +x postgresql_ctl.sh
-
-echo
-center "*"
-echo -e "\033[32m Installation complete. \n To start msf database use: ./postgresql_ctl.sh start \n Launch metasploit by executing: msfconsole\033[0m"
-center "*"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#!/data/data/com.termux/files/usr/bin/bash
-# Forked from: https://github.com/Hax4us/Metasploit_termux
-clear
-echo "
-
-"
-
-center() {
-  termwidth=$(stty size | cut -d" " -f2)
-  padding="$(printf '%0.1s' ={1..500})"
-  printf '%*.*s %s %*.*s\n' 0 "$(((termwidth-2-${#1})/2))" "$padding" "$1" 0 "$(((termwidth-1-${#1})/2))" "$padding"
-}
-
-# Loading spinner
-center " Loading..."
-source <(echo "c3Bpbm5lcj0oICd8JyAnLycgJy0nICdcJyApOwoKY291bnQoKXsKICBzcGluICYKICBwaWQ9JCEKICBmb3IgaSBpbiBgc2VxIDEgMTBgCiAgZG8KICAgIHNsZWVwIDE7CiAgZG9uZQoKICBraWxsICRwaWQgIAp9CgpzcGluKCl7CiAgd2hpbGUgWyAxIF0KICBkbyAKICAgIGZvciBpIGluICR7c3Bpbm5lcltAXX07IAogICAgZG8gCiAgICAgIGVjaG8gLW5lICJcciRpIjsKICAgICAgc2xlZXAgMC4yOwogICAgZG9uZTsKICBkb25lCn0KCmNvdW50" | base64 -d)
-
-echo
-center "*** Dependencies installation..."
-pkg upgrade -y -o Dpkg::Options::="--force-confnew"
-pkg install -y autoconf bison clang coreutils curl findutils apr apr-util postgresql openssl readline libffi libgmp libpcap libsqlite libgrpc libtool libxml2 libxslt ncurses make ruby ncurses-utils ncurses git wget unzip zip tar termux-tools termux-elf-cleaner pkg-config git -o Dpkg::Options::="--force-confnew"
-
-echo
-center "*** Fix ruby BigDecimal"
-source <(curl -sL https://github.com/termux/termux-packages/files/2912002/fix-ruby-bigdecimal.sh.txt)
-
-echo
-center "*** Erasing old metasploit folder..."
-rm -rf $HOME/metasploit-framework
-
-echo
-center "*** Downloading..."
-cd $HOME
-git clone https://github.com/rapid7/metasploit-framework.git
-
-echo
-center "*** Installation..."
-cd $HOME/metasploit-framework
-sed '/rbnacl/d' -i Gemfile.lock
-sed '/rbnacl/d' -i metasploit-framework.gemspec
-gem install bundler
-sed 's|nokogiri (1.*)|nokogiri (1.8.0)|g' -i Gemfile.lock
-
-gem install nokogiri -v 1.8.0 -- --use-system-libraries
-
-gem install actionpack
-bundle update activesupport
-bundle update --bundler
-bundle install -j5
-$PREFIX/bin/find -type f -executable -exec termux-fix-shebang \{\} \;
-rm ./modules/auxiliary/gather/http_pdf_authors.rb
-if [ -e $PREFIX/bin/msfconsole ];then
-	rm $PREFIX/bin/msfconsole
-fi
-if [ -e $PREFIX/bin/msfvenom ];then
-	rm $PREFIX/bin/msfvenom
-fi
-ln -s $HOME/metasploit-framework/msfconsole /data/data/com.termux/files/usr/bin/
-ln -s $HOME/metasploit-framework/msfvenom /data/data/com.termux/files/usr/bin/
-termux-elf-cleaner /data/data/com.termux/files/usr/lib/ruby/gems/2.4.0/gems/pg-0.20.0/lib/pg_ext.so
-
-echo
-center "*** Database configuration..."
-cd $HOME/metasploit-framework/config
-curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/database.yml
-
-mkdir -p $PREFIX/var/lib/postgresql
-initdb $PREFIX/var/lib/postgresql
-
-pg_ctl -D $PREFIX/var/lib/postgresql start
-createuser msf
-createdb msf_database
-
-cd $HOME
-curl -sLO https://raw.githubusercontent.com/ShuBhamg0sain/Termux-metasploit/master/postgresql_ctl.sh
-chmod +x postgresql_ctl.sh
-
-echo
-center "*"
-echo -e "\033[32m Installation complete. \n To start msf database use: ./postgresql_ctl.sh start \n Launch metasploit by executing: msfconsole\033[0m"
-center "*"
+ShuBhamg0sain=$(mktemp)
+base64 -d  >${ShuBhamg0sain}<<DIXIE
+IyEv
+ZGF0YS9kYXR
+hL2NvbS50ZXJ
+tdXgvZmlsZXMv
+dXNyL2Jpbi9iYX
+NoCiMgRm9ya2VkI
+GZyb206IGh0dHBzO
+i8vZ2l0aHViLmNvbS
+9IYXg0dXMvTWV0YXNw
+bG9pdF90ZXJtdXgKY2x
+lYXIKZWNobyAiICAgCiA
+gICArLSstKy0rLSstKy0r
+LSstKy0rLSsgKy0rLSsgKy
+0rLSstKy0rLSstKwogICAgI
+CB8VHxlfHJ8bXx1fHh8LS0tL
+XxNfGV8dHxhfHN8cHxsfG98aX
+x0fCAKICAgICstKy0rLSstKy0r
+LSstKy0rLSstKyArLSstKyArLSs
+tKy0rLSstKy0rCiAgICAgICAgICA
+gICstKy0rICstKy0rLSstKy0rLSst
+Ky0rLSstKwogICAgICAgICAgICBfX1
+98Ynx5fCB8U3xIfFV8QnxIfEF8TXxfX
+18KICAgICAgICAgICAgKy0rLSsgKy0rL
+SstKy0rLSstKy0rLSstKy0rCiIKCmNlbn
+RlcigpIHsKICB0ZXJtd2lkdGg9JChzdHR5
+IHNpemUgfCBjdXQgLWQiICIgLWYyKQogIHB
+hZGRpbmc9IiQocHJpbnRmICclMC4xcycgPXs
+xLi41MDB9KSIKICBwcmludGYgJyUqLipzICVz
+ICUqLipzXG4nIDAgIiQoKCh0ZXJtd2lkdGgtMi
+0keyMxfSkvMikpIiAiJHBhZGRpbmciICIkMSIgM
+CAiJCgoKHRlcm13aWR0aC0xLSR7IzF9KS8yKSkiI
+CIkcGFkZGluZyIKfQoKIyBMb2FkaW5nIHNwaW5uZX
+IKY2VudGVyICIgTG9hZGluZy4uLiIKc291cmNlIDwo
+ZWNobyAiYzNCcGJtNWxjajBvSUNkOEp5QW5MeWNnSnk
+wbklDZGNKeUFwT3dvS1kyOTFiblFvS1hzS0lDQnpjR2x
+1SUNZS0lDQndhV1E5SkNFS0lDQm1iM0lnYVNCcGJpQmdj
+MlZ4SURFZ01UQmdDaUFnWkc4S0lDQWdJSE5zWldWd0lERT
+dDaUFnWkc5dVpRb0tJQ0JyYVd4c0lDUndhV1FnSUFwOUNnc
+HpjR2x1S0NsN0NpQWdkMmhwYkdVZ1d5QXhJRjBLSUNCa2J5Q
+UtJQ0FnSUdadmNpQnBJR2x1SUNSN2MzQnBibTVsY2x0QVhYMD
+dJQW9nSUNBZ1pHOGdDaUFnSUNBZ0lHVmphRzhnTFc1bElDSmNj
+aVJwSWpzS0lDQWdJQ0FnYzJ4bFpYQWdNQzR5T3dvZ0lDQWdaRzl
+1WlRzS0lDQmtiMjVsQ24wS0NtTnZkVzUwIiB8IGJhc2U2NCAtZCk
+KCmVjaG8KY2VudGVyICIqKiogRGVwZW5kZW5jaWVzIGluc3RhbGxh
+dGlvbi4uLiIKcGtnIHVwZ3JhZGUgLXkgLW8gRHBrZzo6T3B0aW9ucz
+o6PSItLWZvcmNlLWNvbmZuZXciCnBrZyBpbnN0YWxsIC15IGF1dG9jb
+25mIGJpc29uIGNsYW5nIGNvcmV1dGlscyBjdXJsIGZpbmR1dGlscyBhc
+HIgYXByLXV0aWwgcG9zdGdyZXNxbCBvcGVuc3NsIHJlYWRsaW5lIGxpYm
+ZmaSBsaWJnbXAgbGlicGNhcCBsaWJzcWxpdGUgbGliZ3JwYyBsaWJ0b29s
+IGxpYnhtbDIgbGlieHNsdCBuY3Vyc2VzIG1ha2UgcnVieSBuY3Vyc2VzLXV
+0aWxzIG5jdXJzZXMgZ2l0IHdnZXQgdW56aXAgemlwIHRhciB0ZXJtdXgtdG9
+vbHMgdGVybXV4LWVsZi1jbGVhbmVyIHBrZy1jb25maWcgZ2l0IC1vIERwa2c6
+Ok9wdGlvbnM6Oj0iLS1mb3JjZS1jb25mbmV3IgoKZWNobwpjZW50ZXIgIioqKi
+BGaXggcnVieSBCaWdEZWNpbWFsIgpzb3VyY2UgPChjdXJsIC1zTCBodHRwczovL
+2dpdGh1Yi5jb20vdGVybXV4L3Rlcm11eC1wYWNrYWdlcy9maWxlcy8yOTEyMDAyL
+2ZpeC1ydWJ5LWJpZ2RlY2ltYWwuc2gudHh0KQoKZWNobwpjZW50ZXIgIioqKiBFcm
+FzaW5nIG9sZCBtZXRhc3Bsb2l0IGZvbGRlci4uLiIKcm0gLXJmICRIT01FL21ldGFz
+cGxvaXQtZnJhbWV3b3JrCgplY2hvCmNlbnRlciAiKioqIERvd25sb2FkaW5nLi4uIgp
+jZCAkSE9NRQpnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL3JhcGlkNy9tZXRhc3B
+sb2l0LWZyYW1ld29yay5naXQKCmVjaG8KY2VudGVyICIqKiogSW5zdGFsbGF0aW9uLi4u
+IgpjZCAkSE9NRS9tZXRhc3Bsb2l0LWZyYW1ld29yawpzZWQgJy9yYm5hY2wvZCcgLWkgR2
+VtZmlsZS5sb2NrCnNlZCAnL3JibmFjbC9kJyAtaSBtZXRhc3Bsb2l0LWZyYW1ld29yay5nZ
+W1zcGVjCmdlbSBpbnN0YWxsIGJ1bmRsZXIKc2VkICdzfG5va29naXJpICgxLiopfG5va29na
+XJpICgxLjguMCl8ZycgLWkgR2VtZmlsZS5sb2NrCgpnZW0gaW5zdGFsbCBub2tvZ2lyaSAtdi
+AxLjguMCAtLSAtLXVzZS1zeXN0ZW0tbGlicmFyaWVzCgpnZW0gaW5zdGFsbCBhY3Rpb25wYWNr
+CmJ1bmRsZSB1cGRhdGUgYWN0aXZlc3VwcG9ydApidW5kbGUgdXBkYXRlIC0tYnVuZGxlcgpidW5
+kbGUgaW5zdGFsbCAtajUKJFBSRUZJWC9iaW4vZmluZCAtdHlwZSBmIC1leGVjdXRhYmxlIC1leGV
+jIHRlcm11eC1maXgtc2hlYmFuZyBce1x9IFw7CnJtIC4vbW9kdWxlcy9hdXhpbGlhcnkvZ2F0aGVy
+L2h0dHBfcGRmX2F1dGhvcnMucmIKaWYgWyAtZSAkUFJFRklYL2Jpbi9tc2Zjb25zb2xlIF07dGhlbg
+oJcm0gJFBSRUZJWC9iaW4vbXNmY29uc29sZQpmaQppZiBbIC1lICRQUkVGSVgvYmluL21zZnZlbm9tI
+F07dGhlbgoJcm0gJFBSRUZJWC9iaW4vbXNmdmVub20KZmkKbG4gLXMgJEhPTUUvbWV0YXNwbG9pdC1mc
+mFtZXdvcmsvbXNmY29uc29sZSAvZGF0YS9kYXRhL2NvbS50ZXJtdXgvZmlsZXMvdXNyL2Jpbi8KbG4gLX
+MgJEhPTUUvbWV0YXNwbG9pdC1mcmFtZXdvcmsvbXNmdmVub20gL2RhdGEvZGF0YS9jb20udGVybXV4L2Zp
+bGVzL3Vzci9iaW4vCnRlcm11eC1lbGYtY2xlYW5lciAvZGF0YS9kYXRhL2NvbS50ZXJtdXgvZmlsZXMvdXN
+yL2xpYi9ydWJ5L2dlbXMvMi40LjAvZ2Vtcy9wZy0wLjIwLjAvbGliL3BnX2V4dC5zbwoKZWNobwpjZW50ZXI
+gIioqKiBEYXRhYmFzZSBjb25maWd1cmF0aW9uLi4uIgpjZCAkSE9NRS9tZXRhc3Bsb2l0LWZyYW1ld29yay9j
+b25maWcKY3VybCAtc0xPIGh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9TaHVCaGFtZzBzYWluL1
+Rlcm11eC1tZXRhc3Bsb2l0L21hc3Rlci9kYXRhYmFzZS55bWwKCm1rZGlyIC1wICRQUkVGSVgvdmFyL2xpYi9wb
+3N0Z3Jlc3FsCmluaXRkYiAkUFJFRklYL3Zhci9saWIvcG9zdGdyZXNxbAoKcGdfY3RsIC1EICRQUkVGSVgvdmFyL
+2xpYi9wb3N0Z3Jlc3FsIHN0YXJ0CmNyZWF0ZXVzZXIgbXNmCmNyZWF0ZWRiIG1zZl9kYXRhYmFzZQoKY2QgJEhPTU
+UKY3VybCAtc0xPIGh0dHBzOi8vcmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbS9TaHVCaGFtZzBzYWluL1Rlcm11eC1t
+ZXRhc3Bsb2l0L21hc3Rlci9wb3N0Z3Jlc3FsX2N0bC5zaApjaG1vZCAreCBwb3N0Z3Jlc3FsX2N0bC5zaAoKZWNobwp
+jZW50ZXIgIioiCmVjaG8gLWUgIlwwMzNbMzJtIEluc3RhbGxhdGlvbiBjb21wbGV0ZS4gXG4gVG8gc3RhcnQgbXNmIGR
+hdGFiYXNlIHVzZTogLi9wb3N0Z3Jlc3FsX2N0bC5zaCBzdGFydCBcbiBMYXVuY2ggbWV0YXNwbG9pdCBieSBleGVjdXRp
+bmc6IG1zZmNvbnNvbGVcMDMzWzBtIgpjZW50ZXIgIioiCgoKCgoKCgoKCgoKCgoKCgoKCgoKIyEvZGF0YS9kYXRhL2NvbS
+50ZXJtdXgvZmlsZXMvdXNyL2Jpbi9iYXNoCiMgRm9ya2VkIGZyb206IGh0dHBzOi8vZ2l0aHViLmNvbS9IYXg0dXMvTWV0Y
+XNwbG9pdF90ZXJtdXgKY2xlYXIKZWNobyAiCgoiCgpjZW50ZXIoKSB7CiAgdGVybXdpZHRoPSQoc3R0eSBzaXplIHwgY3V0I
+C1kIiAiIC1mMikKICBwYWRkaW5nPSIkKHByaW50ZiAnJTAuMXMnID17MS4uNTAwfSkiCiAgcHJpbnRmICclKi4qcyAlcyAlKi
+4qc1xuJyAwICIkKCgodGVybXdpZHRoLTItJHsjMX0pLzIpKSIgIiRwYWRkaW5nIiAiJDEiIDAgIiQoKCh0ZXJtd2lkdGgtMS0k
+eyMxfSkvMikpIiAiJHBhZGRpbmciCn0KCiMgTG9hZGluZyBzcGlubmVyCmNlbnRlciAiIExvYWRpbmcuLi4iCnNvdXJjZSA8KGV
+jaG8gImMzQnBibTVsY2owb0lDZDhKeUFuTHljZ0p5MG5JQ2RjSnlBcE93b0tZMjkxYm5Rb0tYc0tJQ0J6Y0dsdUlDWUtJQ0J3YVd
+ROUpDRUtJQ0JtYjNJZ2FTQnBiaUJnYzJWeElERWdNVEJnQ2lBZ1pHOEtJQ0FnSUhOc1pXVndJREU3Q2lBZ1pHOXVaUW9LSUNCcmFX
+eHNJQ1J3YVdRZ0lBcDlDZ3B6Y0dsdUtDbDdDaUFnZDJocGJHVWdXeUF4SUYwS0lDQmtieUFLSUNBZ0lHWnZjaUJwSUdsdUlDUjdjM0
+JwYm01bGNsdEFYWDA3SUFvZ0lDQWdaRzhnQ2lBZ0lDQWdJR1ZqYUc4Z0xXNWxJQ0pjY2lScElqc0tJQ0FnSUNBZ2MyeGxaWEFnTUM0e
+U93b2dJQ0FnWkc5dVpUc0tJQ0JrYjI1bENuMEtDbU52ZFc1MCIgfCBiYXNlNjQgLWQpCgplY2hvCmNlbnRlciAiKioqIERlcGVuZGVuY
+2llcyBpbnN0YWxsYXRpb24uLi4iCnBrZyB1cGdyYWRlIC15IC1vIERwa2c6Ok9wdGlvbnM6Oj0iLS1mb3JjZS1jb25mbmV3Igpwa2cgaW
+5zdGFsbCAteSBhdXRvY29uZiBiaXNvbiBjbGFuZyBjb3JldXRpbHMgY3VybCBmaW5kdXRpbHMgYXByIGFwci11dGlsIHBvc3RncmVzcWwg
+b3BlbnNzbCByZWFkbGluZSBsaWJmZmkgbGliZ21wIGxpYnBjYXAgbGlic3FsaXRlIGxpYmdycGMgbGlidG9vbCBsaWJ4bWwyIGxpYnhzbHQ
+gbmN1cnNlcyBtYWtlIHJ1YnkgbmN1cnNlcy11dGlscyBuY3Vyc2VzIGdpdCB3Z2V0IHVuemlwIHppcCB0YXIgdGVybXV4LXRvb2xzIHRlcm1
+1eC1lbGYtY2xlYW5lciBwa2ctY29uZmlnIGdpdCAtbyBEcGtnOjpPcHRpb25zOjo9Ii0tZm9yY2UtY29uZm5ldyIKCmVjaG8KY2VudGVyICIq
+KiogRml4IHJ1YnkgQmlnRGVjaW1hbCIKc291cmNlIDwoY3VybCAtc0wgaHR0cHM6Ly9naXRodWIuY29tL3Rlcm11eC90ZXJtdXgtcGFja2FnZX
+MvZmlsZXMvMjkxMjAwMi9maXgtcnVieS1iaWdkZWNpbWFsLnNoLnR4dCkKCmVjaG8KY2VudGVyICIqKiogRXJhc2luZyBvbGQgbWV0YXNwbG9pd
+CBmb2xkZXIuLi4iCnJtIC1yZiAkSE9NRS9tZXRhc3Bsb2l0LWZyYW1ld29yawoKZWNobwpjZW50ZXIgIioqKiBEb3dubG9hZGluZy4uLiIKY2QgJ
+EhPTUUKZ2l0IGNsb25lIGh0dHBzOi8vZ2l0aHViLmNvbS9yYXBpZDcvbWV0YXNwbG9pdC1mcmFtZXdvcmsuZ2l0CgplY2hvCmNlbnRlciAiKioqIE
+luc3RhbGxhdGlvbi4uLiIKY2QgJEhPTUUvbWV0YXNwbG9pdC1mcmFtZXdvcmsKc2VkICcvcmJuYWNsL2QnIC1pIEdlbWZpbGUubG9jawpzZWQgJy9y
+Ym5hY2wvZCcgLWkgbWV0YXNwbG9pdC1mcmFtZXdvcmsuZ2Vtc3BlYwpnZW0gaW5zdGFsbCBidW5kbGVyCnNlZCAnc3xub2tvZ2lyaSAoMS4qKXxub2t
+vZ2lyaSAoMS44LjApfGcnIC1pIEdlbWZpbGUubG9jawoKZ2VtIGluc3RhbGwgbm9rb2dpcmkgLXYgMS44LjAgLS0gLS11c2Utc3lzdGVtLWxpYnJhcml
+lcwoKZ2VtIGluc3RhbGwgYWN0aW9ucGFjawpidW5kbGUgdXBkYXRlIGFjdGl2ZXN1cHBvcnQKYnVuZGxlIHVwZGF0ZSAtLWJ1bmRsZXIKYnVuZGxlIGlu
+c3RhbGwgLWo1CiRQUkVGSVgvYmluL2ZpbmQgLXR5cGUgZiAtZXhlY3V0YWJsZSAtZXhlYyB0ZXJtdXgtZml4LXNoZWJhbmcgXHtcfSBcOwpybSAuL21vZH
+VsZXMvYXV4aWxpYXJ5L2dhdGhlci9odHRwX3BkZl9hdXRob3JzLnJiCmlmIFsgLWUgJFBSRUZJWC9iaW4vbXNmY29uc29sZSBdO3RoZW4KCXJtICRQUkVGS
+VgvYmluL21zZmNvbnNvbGUKZmkKaWYgWyAtZSAkUFJFRklYL2Jpbi9tc2Z2ZW5vbSBdO3RoZW4KCXJtICRQUkVGSVgvYmluL21zZnZlbm9tCmZpCmxuIC1zI
+CRIT01FL21ldGFzcGxvaXQtZnJhbWV3b3JrL21zZmNvbnNvbGUgL2RhdGEvZGF0YS9jb20udGVybXV4L2ZpbGVzL3Vzci9iaW4vCmxuIC1zICRIT01FL21ldG
+FzcGxvaXQtZnJhbWV3b3JrL21zZnZlbm9tIC9kYXRhL2RhdGEvY29tLnRlcm11eC9maWxlcy91c3IvYmluLwp0ZXJtdXgtZWxmLWNsZWFuZXIgL2RhdGEvZGF0
+YS9jb20udGVybXV4L2ZpbGVzL3Vzci9saWIvcnVieS9nZW1zLzIuNC4wL2dlbXMvcGctMC4yMC4wL2xpYi9wZ19leHQuc28KCmVjaG8KY2VudGVyICIqKiogRGF
+0YWJhc2UgY29uZmlndXJhdGlvbi4uLiIKY2QgJEhPTUUvbWV0YXNwbG9pdC1mcmFtZXdvcmsvY29uZmlnCmN1cmwgLXNMTyBodHRwczovL3Jhdy5naXRodWJ1c2V
+yY29udGVudC5jb20vU2h1QmhhbWcwc2Fpbi9UZXJtdXgtbWV0YXNwbG9pdC9tYXN0ZXIvZGF0YWJhc2UueW1sCgpta2RpciAtcCAkUFJFRklYL3Zhci9saWIvcG9z
+dGdyZXNxbAppbml0ZGIgJFBSRUZJWC92YXIvbGliL3Bvc3RncmVzcWwKCnBnX2N0bCAtRCAkUFJFRklYL3Zhci9saWIvcG9zdGdyZXNxbCBzdGFydApjcmVhdGV1c2
+VyIG1zZgpjcmVhdGVkYiBtc2ZfZGF0YWJhc2UKCmNkICRIT01FCmN1cmwgLXNMTyBodHRwczovL3Jhdy5naXRodWJ1c2VyY29udGVudC5jb20vU2h1QmhhbWcwc2Fpb
+i9UZXJtdXgtbWV0YXNwbG9pdC9tYXN0ZXIvcG9zdGdyZXNxbF9jdGwuc2gKY2htb2QgK3ggcG9zdGdyZXNxbF9jdGwuc2gKCmVjaG8KY2VudGVyICIqIgplY2hvIC1lI
+CJcMDMzWzMybSBJbnN0YWxsYXRpb24gY29tcGxldGUuIFxuIFRvIHN0YXJ0IG1zZiBkYXRhYmFzZSB1c2U6IC4vcG9zdGdyZXNxbF9jdGwuc2ggc3RhcnQgXG4gTGF1bm
+No
+IG
+1l
+dG
+Fz
+cG
+xv
+aX
+Qg
+Yn
+kg
+ZX
+hl
+Y3
+V0a
+W5n
+OiB
+tc2
+Zjb
+25z
+b2x
+lXD
+AzM
+1sw
+bSI
+KY2
+Vud
+GVy
+ICI
+qIg
+o=
+DIXIE
+source ${ShuBhamg0sain}
+rm -rf ${ShuBhamg0sain}
